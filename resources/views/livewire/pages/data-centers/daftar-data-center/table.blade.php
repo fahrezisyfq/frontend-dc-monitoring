@@ -68,7 +68,10 @@
                 <th scope="col" class="whitespace-nowrap">Perusahaan</th>
                 <th scope="col" class="whitespace-nowrap">Lokasi</th>
                 <th scope="col" class="whitespace-nowrap">Status</th>
-                <th scope="col" class="whitespace-nowrap text-right">IT Load Design</th>
+                <th scope="col" class="whitespace-nowrap text-right">IT Load Design (kW)</th>
+                <th scope="col" class="whitespace-nowrap text-right">IT Load Digunakan (kW)</th>
+                <th scope="col" class="whitespace-nowrap text-right">PUE</th>
+                <th scope="col" class="whitespace-nowrap text-right">WUE (m³/kWh)</th>
                 <th scope="col" class="whitespace-nowrap text-center">Aksi</th>
             </tr>
         </x-slot:header>
@@ -98,6 +101,12 @@
                     </td>
                     <td class="whitespace-nowrap text-right tabular-nums">
                         {{ $form['design_load'] !== '' ? $form['design_load'] . ' kW' : '—' }}</td>
+                    <td class="whitespace-nowrap text-right tabular-nums">
+                        {{ $form['used_load'] !== '' ? $form['used_load'] . ' kW' : '—' }}</td>
+                    <td class="whitespace-nowrap text-right tabular-nums">
+                        {{ $center['pue'] !== '' ? number_format((float) $center['pue'], 2, '.', '') : '—' }}</td>
+                    <td class="whitespace-nowrap text-right tabular-nums">
+                        {{ $center['wue'] !== '' ? number_format((float) $center['wue'], 2, '.', '') . ' m³/kWh' : '—' }}</td>
                     <td class="w-40 py-2">
                         <div class="flex min-w-35 items-center justify-center gap-1 sm:min-w-29">
                             <x-button-detail :data-id="$id" :data-name="$form['name']" ::disabled="modalActive"
@@ -111,7 +120,7 @@
                 </tr>
             @empty
                 <tr class="hover:bg-transparent">
-                    <td colspan="7" class="px-4 py-8 text-center">
+                    <td colspan="10" class="px-4 py-8 text-center">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"
                             stroke-linecap="round" stroke-linejoin="round"
                             class="mx-auto mb-2 size-6 text-neutral-700" aria-hidden="true">

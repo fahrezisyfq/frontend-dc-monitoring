@@ -16,6 +16,10 @@ class IndexTest extends TestCase
             ->assertSee('PT Awan Rekaan Digital')
             ->assertSee('Tambah Pusat Data')
             ->assertSee('Detail Pusat Data')
+            ->assertSee('IT Load Digunakan')
+            ->assertSee('WUE (m³/kWh)')
+            ->assertSee('1.40')
+            ->assertSee('0.00 m³/kWh')
             ->assertSee('max-w-2xl', false)
             ->assertSee('overscroll-contain', false)
             ->assertSee('h-dvh', false)
@@ -29,7 +33,7 @@ class IndexTest extends TestCase
         $this->assertCount(1, $xpath->query('//div[contains(@x-data, "drawer(")]'));
 
         foreach (range(1, 8) as $id) {
-            $buttons = $xpath->query('//table/tbody/tr['.$id.']/td[7]//button');
+            $buttons = $xpath->query('//table/tbody/tr['.$id.']/td[10]//button');
             $this->assertSame(['Detail', 'Edit', 'Hapus'], array_map(
                 fn ($button) => $button->getAttribute('title'), iterator_to_array($buttons),
             ));
@@ -53,9 +57,23 @@ class IndexTest extends TestCase
             ->assertSee('Energi dan Air')
             ->assertSee('Sertifikasi')
             ->assertSee('Belum ada sertifikasi')
+            ->assertSee('Total PJBTL')
+            ->assertSee('Reporting Date')
+            ->assertSee('Informasi Utama')
+            ->assertSee('Klasifikasi dan Layanan')
+            ->assertSee('Alamat Pusat Data')
+            ->assertSee('aria-label="Power Usage Effectiveness (PUE)"', false)
+            ->assertSee('aria-label="Water Usage Effectiveness (WUE)"', false)
             ->assertSee('$wire.dataCenters[selectedId]?.form?.name', false)
             ->assertSee('$wire.dataCenters[selectedId]?.pue', false)
             ->assertSee('certificate.name', false);
+    }
+
+    public function test_wue_keeps_small_values_with_four_decimals(): void
+    {
+        Livewire::test(Index::class)
+            ->assertSet('dataCenters.1.wue', '0.003')
+            ->assertSet('dataCenters.6.wue', '0.0025');
     }
 
     public function test_edit_modal_binds_validation_errors_to_alpine_fields(): void
@@ -162,7 +180,7 @@ class IndexTest extends TestCase
             ->assertSet('dataCenters.1.form.name', 'DC Jakarta Utama')
             ->assertSet('dataCenters.1.form.design_load', '1600')
             ->assertSet('dataCenters.1.pue', '1.5')
-            ->assertSet('dataCenters.1.wue', '3')
+            ->assertSet('dataCenters.1.wue', '0.003')
             ->assertDispatched('toast', type: 'success', message: 'Data pusat data berhasil diperbarui dalam simulasi.');
     }
 

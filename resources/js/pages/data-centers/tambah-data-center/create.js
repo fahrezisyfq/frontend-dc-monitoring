@@ -22,8 +22,8 @@ export function dataCenterCreate(config) {
         init() {
             this.$watch('form.province', () => { this.form.city = ''; this.form.district = ''; });
             this.$watch('form.city', () => { this.form.district = ''; });
-            for (const field of Object.keys(config.energyFields)) {
-                this.$watch(`form.${field}`, () => this.validateStep(3));
+            for (const field of ['it_energy', 'total_energy', 'water']) {
+                this.$watch(`form.${field}`, () => this.validateStep(2));
             }
         },
 
@@ -43,10 +43,9 @@ export function dataCenterCreate(config) {
         get stepDescription() {
             return {
                 1: 'Field bertanda * wajib diisi. Field lainnya dapat dikosongkan untuk simulasi.',
-                2: 'Masukkan angka nonnegatif; gunakan titik untuk desimal dan tahun 4 digit.',
-                3: 'Masukkan konsumsi tahunan energi dan air untuk periode pelaporan yang sama. PUE dan WUE dihitung otomatis.',
-                4: 'Sertifikasi opsional. Jika diisi, nama sertifikasi dan lembaga penerbit wajib dilengkapi.',
-                5: 'Periksa kembali seluruh data. Gunakan Ubah untuk memperbaiki isian.',
+                2: 'Masukkan angka nonnegatif; gunakan titik untuk desimal. PUE dan WUE dihitung otomatis dari konsumsi energi dan air.',
+                3: 'Sertifikasi opsional. Jika diisi, nama sertifikasi dan lembaga penerbit wajib dilengkapi.',
+                4: 'Periksa kembali seluruh data. Gunakan Ubah untuk memperbaiki isian.',
             }[this.step];
         },
 
@@ -120,7 +119,7 @@ export function dataCenterCreate(config) {
         validateStep(step) {
             const errors = {};
             const add = (key, message) => { errors[key] = [message]; };
-            const fields = { 1: config.mainFields, 2: config.capacityFields, 3: config.energyFields }[step] ?? {};
+            const fields = { 1: config.identityFields, 2: config.capacityFields }[step] ?? {};
             for (const [key, [label, type]] of Object.entries(fields)) {
                 const value = this.form[key];
                 if (type === 'text') {
@@ -147,11 +146,11 @@ export function dataCenterCreate(config) {
                     add('form.services', 'Pilih salah satu opsi yang tersedia.');
                 }
             }
-            if (step === 3 && numeric(this.form.it_energy) && numeric(this.form.total_energy)
+            if (step === 2 && numeric(this.form.it_energy) && numeric(this.form.total_energy)
                 && Number(this.form.it_energy) >= 0 && Number(this.form.total_energy) < Number(this.form.it_energy)) {
                 add('form.total_energy', 'Konsumsi energi listrik total tidak boleh lebih kecil daripada konsumsi energi listrik IT.');
             }
-            if (step === 4) {
+            if (step === 3) {
                 const validDate = value => /^\d{4}-\d{2}-\d{2}$/.test(value) && !Number.isNaN(Date.parse(value)) && new Date(value).toISOString().slice(0, 10) === value;
                 for (const [index, row] of Object.entries(this.certificates)) {
                     if (!Object.values(row).some(value => String(value ?? '').trim())) continue;
@@ -170,10 +169,10 @@ export function dataCenterCreate(config) {
                 }
             }
             // Live energy checks only replace errors belonging to that section.
-            const prefix = step === 4 ? 'certificates.' : null;
             for (const key of Object.keys(this.errors)) {
-                if ((prefix && key.startsWith(prefix)) || Object.keys(fields).some(field => key === `form.${field}`)
-                    || (step === 1 && key.startsWith('form.') && ![...Object.keys(config.capacityFields), ...Object.keys(config.energyFields)].includes(key.slice(5)))) delete this.errors[key];
+                if ((step === 3 && key.startsWith('certificates.'))
+                    || Object.keys(fields).some(field => key === `form.${field}`)
+                    || (step === 1 && key.startsWith('form.') && !Object.keys(config.capacityFields).includes(key.slice(5)))) delete this.errors[key];
             }
             Object.assign(this.errors, errors);
             return Object.keys(errors).length === 0;
@@ -181,9 +180,9 @@ export function dataCenterCreate(config) {
 
         async submit() {
             if (this.busy || this.disposed) return;
-            if (this.step !== 5) { this.next(); return; }
+            if (this.step !== 4) { this.next(); return; }
             this.errors = {};
-            for (let step = 1; step <= 4; step++) {
+            for (let step = 1; step <= 3; step++) {
                 if (!this.validateStep(step)) {
                     this.step = step;
                     if (!this.visitedSteps.includes(step)) this.visitedSteps.push(step);

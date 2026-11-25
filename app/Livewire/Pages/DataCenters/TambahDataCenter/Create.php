@@ -12,27 +12,24 @@ use Livewire\Component;
 
 class Create extends Component
 {
-    public const STEPS = [1 => 'Identitas Pusat Data', 2 => 'Kapasitas & Utilisasi', 3 => 'Energi dan Air', 4 => 'Sertifikasi', 5 => 'Konfirmasi'];
+    public const STEPS = [1 => 'Identitas Pusat Data', 2 => 'Kapasitas & Utilisasi', 3 => 'Sertifikasi', 4 => 'Konfirmasi'];
 
-    public const MAIN_FIELDS = [
+    public const IDENTITY_FIELDS = [
         'name' => ['Nama Pusat Data', 'text', '', 'Contoh: DC Jakarta Alpha'],
+        'land_area' => ['Luas Lahan', 'number', 'ha', 'Contoh: 2.5'],
+        'building_area' => ['Luas Bangunan', 'number', 'm²', 'Contoh: 12000'],
         'operation_year' => ['Tahun Mulai Operasi', 'year', '', 'YYYY'],
         'construction_year' => ['Tahun Mulai Konstruksi', 'year', '', 'YYYY'],
     ];
 
     public const CAPACITY_FIELDS = [
-        'land_area' => ['Luas Lahan', 'number', 'ha', 'Contoh: 2.5'],
-        'building_area' => ['Luas Bangunan', 'number', 'm²', 'Contoh: 12000'],
         'design_load' => ['Kapasitas IT Load Design', 'number', 'kW', 'Contoh: 1500.5'],
         'used_load' => ['Kapasitas IT Load Digunakan', 'number', 'kW', 'Contoh: 750'],
-        'pjbtl' => ['PJBTL', 'number', 'kVA', 'Contoh: 2000'],
-        'reporting_year' => ['Tahun Pelaporan (Reporting Year)', 'year', '', 'YYYY'],
-    ];
-
-    public const ENERGY_FIELDS = [
         'it_energy' => ['Konsumsi Energi Listrik IT', 'number', 'kWh', 'Contoh: 540000'],
         'total_energy' => ['Konsumsi Energi Listrik Total', 'number', 'kWh', 'Contoh: 810000'],
-        'water' => ['Konsumsi Air', 'number', 'Liter', 'Contoh: 270000'],
+        'pjbtl' => ['Total PJBTL', 'number', 'kVA', 'Contoh: 2000'],
+        'water' => ['Konsumsi Air', 'number', 'm³', 'Contoh: 270000'],
+        'reporting_year' => ['Reporting Date', 'year', '', 'YYYY'],
     ];
 
     public const CERTIFICATE_FIELDS = [
@@ -121,7 +118,7 @@ class Create extends Component
         }
         $rules = [];
         $attributes = [];
-        foreach ([self::MAIN_FIELDS, self::CAPACITY_FIELDS, self::ENERGY_FIELDS] as $fields) {
+        foreach ([self::IDENTITY_FIELDS, self::CAPACITY_FIELDS] as $fields) {
             foreach ($fields as $key => [$label, $type]) {
                 $rules['form.'.$key] = match ($type) {
                     'number' => ['nullable', 'numeric', 'min:0'],
@@ -178,12 +175,9 @@ class Create extends Component
     {
         $steps = array_map(function ($key) {
             if (str_starts_with($key, 'certificates')) {
-                return 4;
-            }
-            $field = str_starts_with($key, 'form.') ? substr($key, 5) : '';
-            if (array_key_exists($field, self::ENERGY_FIELDS)) {
                 return 3;
             }
+            $field = str_starts_with($key, 'form.') ? substr($key, 5) : '';
 
             return array_key_exists($field, self::CAPACITY_FIELDS) ? 2 : 1;
         }, array_keys($errors));
@@ -207,21 +201,21 @@ class Create extends Component
     public function render(): View
     {
         $form = array_fill_keys([
-            ...array_keys(self::MAIN_FIELDS), ...array_keys(self::CAPACITY_FIELDS), ...array_keys(self::ENERGY_FIELDS),
+            ...array_keys(self::IDENTITY_FIELDS), ...array_keys(self::CAPACITY_FIELDS),
             'company', 'status', 'province', 'city', 'district', 'ai_ready', 'area',
         ], '');
         $form['services'] = [];
 
         return view('livewire.pages.data-centers.tambah-data-center.create', [
-            'steps' => self::STEPS, 'mainFields' => self::MAIN_FIELDS, 'capacityFields' => self::CAPACITY_FIELDS,
-            'energyFields' => self::ENERGY_FIELDS, 'certificateFields' => self::CERTIFICATE_FIELDS,
+            'steps' => self::STEPS, 'identityFields' => self::IDENTITY_FIELDS, 'capacityFields' => self::CAPACITY_FIELDS,
+            'certificateFields' => self::CERTIFICATE_FIELDS,
             'statuses' => self::STATUSES, 'services' => $this->serviceOptions,
             'categories' => self::CATEGORIES,
             'initialState' => [
                 'form' => $form, 'companies' => $this->companies, 'areas' => $this->areas,
                 'regions' => self::REGIONS, 'steps' => self::STEPS,
-                'mainFields' => self::MAIN_FIELDS, 'capacityFields' => self::CAPACITY_FIELDS,
-                'energyFields' => self::ENERGY_FIELDS, 'certificateFields' => self::CERTIFICATE_FIELDS,
+                'identityFields' => self::IDENTITY_FIELDS, 'capacityFields' => self::CAPACITY_FIELDS,
+                'certificateFields' => self::CERTIFICATE_FIELDS,
                 'statuses' => self::STATUSES, 'services' => self::SERVICES,
                 'categories' => self::CATEGORIES,
             ],

@@ -8,9 +8,9 @@ function page() {
     const state = dataCenterCreate({
         form: { name: 'DC Uji', company: '', province: '', city: '', district: '', services: [], it_energy: '', total_energy: '', water: '' },
         companies: { 1: { name: 'Company', nib: '0000000000001' } }, areas: { 1: 'Area' },
-        steps: { 1: 'Identity', 2: 'Capacity', 3: 'Energy', 4: 'Certificates', 5: 'Confirmation' },
-        mainFields: { name: ['Nama', 'text'] }, capacityFields: { reporting_year: ['Tahun', 'year'], land_area: ['Luas', 'number'] },
-        energyFields: Object.fromEntries(['it_energy', 'total_energy', 'water'].map(key => [key, [key, 'number']])),
+        steps: { 1: 'Identity', 2: 'Capacity', 3: 'Certificates', 4: 'Confirmation' },
+        identityFields: { name: ['Nama', 'text'], land_area: ['Luas', 'number'] },
+        capacityFields: { reporting_year: ['Tahun', 'year'], it_energy: ['IT', 'number'], total_energy: ['Total', 'number'], water: ['Air', 'number'] },
         certificateFields: { name: ['Nama', 'text'], issuer: ['Penerbit', 'text'], issued_at: ['Terbit', 'date'], expires_at: ['Kedaluwarsa', 'date'] },
         regions: { Bali: { timezone: 'WITA', cities: { Denpasar: { Selatan: 'DEMO' } } } },
         statuses: ['Operational'], services: ['Rack'], categories: ['Nasional'],
@@ -29,7 +29,7 @@ function page() {
 
 test('navigation, company and certificate edits stay local and retain the draft', () => {
     const s = page();
-    s.next(); s.form.land_area = '2.5'; s.goToStep(4); s.addCertificate();
+    s.next(); s.form.land_area = '2.5'; s.goToStep(3); s.addCertificate();
     s.certificates[0].name = 'ISO'; s.addCertificate(); s.removeCertificate(0); s.addCertificate();
     assert.deepEqual(Object.keys(s.certificates), ['1', '2']);
     s.backTo(1);
@@ -54,38 +54,39 @@ test('ratios handle decimals, zero, invalid and inconsistent totals', () => {
     const s = page();
     Object.assign(s.form, { it_energy: '3', total_energy: '4', water: '0' });
     assert.equal(s.pue, '1.33'); assert.equal(s.wue, '0');
-    s.form.total_energy = '2'; assert.equal(s.pue, ''); assert.equal(s.validateStep(3), false);
+    s.form.water = '9'; assert.equal(s.wue, '3');
+    s.form.total_energy = '2'; assert.equal(s.pue, ''); assert.equal(s.validateStep(2), false);
     s.form.it_energy = '0'; assert.equal(s.wue, '');
     s.form.it_energy = '1'; s.form.water = '-1'; assert.equal(s.wue, '');
-    s.form.water = '1e999'; assert.equal(s.validateStep(3), false);
+    s.form.water = '1e999'; assert.equal(s.validateStep(2), false);
 });
 
 test('final confirmation cannot bypass frontend validation', async () => {
     const s = page();
-    s.step = 5; s.form.reporting_year = '26';
+    s.step = 4; s.form.reporting_year = '26';
     await s.submit(); assert.equal(s.step, 2); assert.equal(s.calls.length, 0);
-    s.form.reporting_year = '2026'; s.addCertificate(); s.certificates[0].name = 'ISO'; s.step = 5;
-    await s.submit(); assert.equal(s.step, 4); assert.ok(s.errorFor('certificates.0.issuer'));
+    s.form.reporting_year = '2026'; s.addCertificate(); s.certificates[0].name = 'ISO'; s.step = 4;
+    await s.submit(); assert.equal(s.step, 3); assert.ok(s.errorFor('certificates.0.issuer'));
     s.certificates[0].issuer = 'Issuer';
     Object.assign(s.certificates[0], { issued_at: '2026-02-02', expires_at: '2026-01-01' });
-    assert.equal(s.validateStep(4), false);
+    assert.equal(s.validateStep(3), false);
 });
 
 test('submit sends one snapshot and blocks repeated submissions while busy', async () => {
     const s = page(); let resolve;
     s.$wire.submit = payload => { s.calls.push(payload); return new Promise(done => { resolve = done; }); };
-    s.step = 5;
+    s.step = 4;
     const pending = s.submit(); await s.submit(); s.goToStep(1); s.addCertificate();
-    assert.equal(s.calls.length, 1); assert.equal(s.step, 5); assert.deepEqual(s.certificates, {});
+    assert.equal(s.calls.length, 1); assert.equal(s.step, 4); assert.deepEqual(s.certificates, {});
     s.form.name = 'Changed'; assert.equal(s.calls[0].form.name, 'DC Uji');
     resolve({ success: true }); await pending; assert.equal(s.busy, false);
 });
 
 test('server validation and network failures preserve draft and permit retry', async () => {
-    const s = page(); s.step = 5;
-    s.$wire.submit = async () => ({ success: false, step: 3, errors: { 'form.water': ['Server error'] } });
-    await s.submit(); assert.equal(s.step, 3); assert.equal(s.errorFor('form.water'), 'Server error');
+    const s = page(); s.step = 4;
+    s.$wire.submit = async () => ({ success: false, step: 2, errors: { 'form.water': ['Server error'] } });
+    await s.submit(); assert.equal(s.step, 2); assert.equal(s.errorFor('form.water'), 'Server error');
     assert.equal(s.form.name, 'DC Uji'); assert.equal(s.busy, false);
-    s.step = 5; s.$wire.submit = async () => { throw new Error('offline'); };
+    s.step = 4; s.$wire.submit = async () => { throw new Error('offline'); };
     await s.submit(); assert.ok(s.message); assert.equal(s.busy, false);
 });

@@ -30,8 +30,11 @@ class CreateTest extends TestCase
     {
         $this->get(route('data-centers.create'))->assertOk()
             ->assertSee('dataCenterCreate', false)
-            ->assertSee('data-step="5"', false)
+            ->assertSee('data-step="4"', false)
             ->assertSee('Service Models')
+            ->assertSee('Reporting Date')
+            ->assertSee('Total PJBTL')
+            ->assertSee('m³')
             ->assertDontSee('form.providers', false)
             ->assertDontSee('<legend class="mb-2 text-sm font-medium">Provider', false)
             ->assertDontSee('wire:model', false)
@@ -68,7 +71,7 @@ class CreateTest extends TestCase
         $payload['form']['it_energy'] = '100.5';
         $payload['form']['total_energy'] = '100';
         $result = $this->submitPayload($payload);
-        $this->assertSame(3, $result['step']);
+        $this->assertSame(2, $result['step']);
         $this->assertArrayHasKey('form.total_energy', $result['errors']);
         $payload['form']['total_energy'] = '100.5';
         $payload['form']['water'] = '0';
@@ -100,7 +103,7 @@ class CreateTest extends TestCase
         $this->assertTrue($this->submitPayload($payload)['success']);
         $payload['certificates'][2]['name'] = 'ISO';
         $result = $this->submitPayload($payload);
-        $this->assertSame(4, $result['step']);
+        $this->assertSame(3, $result['step']);
         $this->assertArrayHasKey('certificates.2.issuer', $result['errors']);
         $payload['certificates'][2] = ['name' => 'ISO', 'issuer' => 'Issuer', 'issued_at' => '2026-02-02', 'expires_at' => '2026-01-01'];
         $this->assertArrayHasKey('certificates.2.expires_at', $this->submitPayload($payload)['errors']);

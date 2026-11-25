@@ -45,6 +45,11 @@ class Index extends Component
         ]],
     ];
 
+    // Step 2 fields are split for this page's detail/edit sections.
+    private const UTILIZATION_KEYS = ['design_load', 'used_load'];
+
+    private const ENERGY_KEYS = ['it_energy', 'total_energy', 'pjbtl', 'water', 'reporting_year'];
+
     private const EMPTY_FORM = [
         'name' => '',
         'company' => '',
@@ -161,7 +166,7 @@ class Index extends Component
         $center['pum'] = $this->regions[$form['province']]['cities'][$form['city']][$form['district']] ?? '';
         $center['timezone'] = $this->regions[$form['province']]['timezone'] ?? '';
         $center['pue'] = $this->ratio($form['it_energy'], $form['total_energy'], true);
-        $center['wue'] = $this->ratio($form['it_energy'], $form['water']);
+        $center['wue'] = $this->ratio($form['it_energy'], $form['water'], false, 4);
 
         $this->dataCenters[$id] = $center;
         $this->resetValidation();
@@ -229,9 +234,11 @@ class Index extends Component
 
         return view('livewire.pages.data-centers.daftar-data-center.index', [
             'filteredDataCenters' => $filteredDataCenters,
-            'mainFields' => Create::MAIN_FIELDS,
-            'capacityFields' => Create::CAPACITY_FIELDS,
-            'energyFields' => Create::ENERGY_FIELDS,
+            'identityFields' => Create::IDENTITY_FIELDS,
+            'utilizationFields' => array_intersect_key(Create::CAPACITY_FIELDS, array_flip(self::UTILIZATION_KEYS)),
+            'energyFields' => array_intersect_key(Create::CAPACITY_FIELDS, array_flip(self::ENERGY_KEYS)),
+            'puePreview' => $this->ratio($this->form['it_energy'] ?? '', $this->form['total_energy'] ?? '', true),
+            'wuePreview' => $this->ratio($this->form['it_energy'] ?? '', $this->form['water'] ?? '', false, 4),
             'certificateFields' => Create::CERTIFICATE_FIELDS,
             'statuses' => Create::STATUSES,
             'categories' => Create::CATEGORIES,
@@ -260,7 +267,7 @@ class Index extends Component
                 'services' => ['Rack Colocation', 'Private Suite'],
                 'land_area' => '2.5', 'building_area' => '12000', 'design_load' => '1500',
                 'used_load' => '980', 'pjbtl' => '2000', 'reporting_year' => '2025',
-                'it_energy' => '5400000', 'total_energy' => '7560000', 'water' => '16200000',
+                'it_energy' => '5400000', 'total_energy' => '7560000', 'water' => '16200',
             ], [$certificate]),
             2 => $this->makeCenter(2, 'DC Bandung Zeta', 1, [
                 'status' => 'Decommissioned', 'construction_year' => '2016', 'operation_year' => '2018',
@@ -296,7 +303,7 @@ class Index extends Component
                 'services' => ['Rack Colocation', 'Caged Colocation', 'Servers Provision'],
                 'land_area' => '3.1', 'building_area' => '14500', 'design_load' => '1800',
                 'used_load' => '1350', 'pjbtl' => '2400', 'reporting_year' => '2025',
-                'it_energy' => '7200000', 'total_energy' => '9360000', 'water' => '14400000',
+                'it_energy' => '7200000', 'total_energy' => '9360000', 'water' => '14400',
             ], [$certificate]),
             6 => $this->makeCenter(6, 'DC Medan Epsilon', 6, [
                 'status' => 'Operational', 'construction_year' => '2020', 'operation_year' => '2022',
@@ -305,7 +312,7 @@ class Index extends Component
                 'services' => ['Rack Colocation'],
                 'land_area' => '1.8', 'building_area' => '8000', 'design_load' => '950',
                 'used_load' => '620', 'pjbtl' => '1300', 'reporting_year' => '2025',
-                'it_energy' => '3600000', 'total_energy' => '4680000', 'water' => '9000000',
+                'it_energy' => '3600000', 'total_energy' => '4680000', 'water' => '9000',
             ]),
             7 => $this->makeCenter(7, 'DC Denpasar Eta', 4, [
                 'status' => 'Operational', 'construction_year' => '2021', 'operation_year' => '2023',
@@ -314,7 +321,7 @@ class Index extends Component
                 'services' => ['Private Suite', 'Dedicated Data Hall'],
                 'land_area' => '2.2', 'building_area' => '9600', 'design_load' => '1100',
                 'used_load' => '740', 'pjbtl' => '1500', 'reporting_year' => '2025',
-                'it_energy' => '4100000', 'total_energy' => '5330000', 'water' => '8200000',
+                'it_energy' => '4100000', 'total_energy' => '5330000', 'water' => '8200',
             ]),
             8 => $this->makeCenter(8, 'DC Jayapura Nu', 5, [
                 'status' => 'Operational', 'construction_year' => '2019', 'operation_year' => '2022',
@@ -323,7 +330,7 @@ class Index extends Component
                 'services' => ['Caged Colocation', 'Servers Provision'],
                 'land_area' => '2.8', 'building_area' => '10500', 'design_load' => '1250',
                 'used_load' => '810', 'pjbtl' => '1700', 'reporting_year' => '2025',
-                'it_energy' => '4500000', 'total_energy' => '5850000', 'water' => '11250000',
+                'it_energy' => '4500000', 'total_energy' => '5850000', 'water' => '11250',
             ]),
         ];
     }
@@ -343,11 +350,11 @@ class Index extends Component
             'pum' => $districts[$form['district']] ?? '',
             'timezone' => $this->regions[$form['province']]['timezone'] ?? '',
             'pue' => $this->ratio($form['it_energy'], $form['total_energy'], true),
-            'wue' => $this->ratio($form['it_energy'], $form['water']),
+            'wue' => $this->ratio($form['it_energy'], $form['water'], false, 4),
         ];
     }
 
-    private function ratio(mixed $it, mixed $value, bool $requireAtLeastIt = false): string
+    private function ratio(mixed $it, mixed $value, bool $requireAtLeastIt = false, int $precision = 2): string
     {
         if (! is_numeric($it) || ! is_numeric($value) || (float) $it <= 0 || (float) $value < 0) {
             return '';
@@ -357,7 +364,7 @@ class Index extends Component
             return '';
         }
 
-        return (string) round((float) $value / (float) $it + PHP_FLOAT_EPSILON, 2);
+        return (string) round((float) $value / (float) $it + PHP_FLOAT_EPSILON, $precision);
     }
 
     private function validationRules(): array
@@ -379,7 +386,7 @@ class Index extends Component
             'certificates' => ['present', 'array'],
         ];
 
-        foreach ([Create::MAIN_FIELDS, Create::CAPACITY_FIELDS, Create::ENERGY_FIELDS] as $fields) {
+        foreach ([Create::IDENTITY_FIELDS, Create::CAPACITY_FIELDS] as $fields) {
             foreach ($fields as $key => [$label, $type]) {
                 if ($key === 'name') {
                     continue;
@@ -428,7 +435,7 @@ class Index extends Component
             'certificates' => 'Sertifikasi',
         ];
 
-        foreach ([Create::MAIN_FIELDS, Create::CAPACITY_FIELDS, Create::ENERGY_FIELDS] as $fields) {
+        foreach ([Create::IDENTITY_FIELDS, Create::CAPACITY_FIELDS] as $fields) {
             foreach ($fields as $key => [$label]) {
                 $attributes['form.'.$key] = $label;
             }

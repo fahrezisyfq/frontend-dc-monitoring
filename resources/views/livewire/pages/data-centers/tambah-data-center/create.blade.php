@@ -5,17 +5,17 @@
         menyimpan data secara permanen.</p>
     <nav aria-label="Tahapan tambah pusat data" class="rounded-xl border border-neutral-300 bg-white p-4 sm:p-6">
         <div class="mb-3 flex items-center justify-between gap-3 text-sm font-medium" aria-live="polite">
-            <p x-text="`Langkah ${step} dari ${Object.keys(steps).length}`">Langkah 1 dari 5</p>
-            <span class="tabular-nums text-primary" x-text="`${step * 20}%`">20%</span>
+            <p x-text="`Langkah ${step} dari ${Object.keys(steps).length}`">Langkah 1 dari 4</p>
+            <span class="tabular-nums text-primary" x-text="`${step * 25}%`">25%</span>
         </div>
         <div role="progressbar" aria-label="Progres tahapan form" aria-valuemin="0" aria-valuemax="100"
-            :aria-valuenow="step * 20"
-            :aria-valuetext="`Langkah ${step} dari 5: ${steps[step]}`"
+            :aria-valuenow="step * 25"
+            :aria-valuetext="`Langkah ${step} dari 4: ${steps[step]}`"
             class="mb-3 h-1.5 overflow-hidden rounded-full bg-neutral-100">
             <div class="h-full rounded-full bg-primary transition-[width] duration-200 ease-out motion-reduce:transition-none"
-                :class="{ 'w-1/5': step === 1, 'w-2/5': step === 2, 'w-3/5': step === 3, 'w-4/5': step === 4, 'w-full': step === 5 }"></div>
+                :class="{ 'w-1/4': step === 1, 'w-1/2': step === 2, 'w-3/4': step === 3, 'w-full': step === 4 }"></div>
         </div>
-        <ol class="grid grid-cols-2 gap-2 sm:grid-cols-3 xl:grid-cols-5">
+        <ol class="grid grid-cols-2 gap-2 sm:grid-cols-2 xl:grid-cols-4">
             @foreach ($steps as $number => $title)
                 <li class="min-w-0">
                     <button type="button" @click="goToStep({{ $number }})" :disabled="busy"
@@ -42,18 +42,13 @@
                 <div data-step="1" x-show="step === 1" class="space-y-6">
                     @include('livewire.pages.data-centers.tambah-data-center.identity')
                 </div>
-                <div data-step="2" x-cloak x-show="step === 2" class="grid gap-4 md:grid-cols-2">
-                    @foreach ($capacityFields as $key => [$label, $type, $unit, $placeholder])
-                        @include('livewire.pages.data-centers.tambah-data-center.field', ['field' => ['model' => 'form.' . $key, 'label' => $label, 'type' => $type, 'unit' => $unit, 'placeholder' => $placeholder]])
-                    @endforeach
+                <div data-step="2" x-cloak x-show="step === 2" class="space-y-6">
+                    @include('livewire.pages.data-centers.tambah-data-center.capacity')
                 </div>
                 <div data-step="3" x-cloak x-show="step === 3" class="space-y-6">
-                    @include('livewire.pages.data-centers.tambah-data-center.energy-water')
-                </div>
-                <div data-step="4" x-cloak x-show="step === 4" class="space-y-6">
                     @include('livewire.pages.data-centers.tambah-data-center.certifications')
                 </div>
-                <div data-step="5" x-cloak x-show="step === 5" class="space-y-6">
+                <div data-step="4" x-cloak x-show="step === 4" class="space-y-6">
                     @include('livewire.pages.data-centers.tambah-data-center.confirmation')
                 </div>
             </div>
@@ -62,7 +57,7 @@
                 <div><span x-cloak x-show="busy" role="status" class="text-sm text-neutral-700">Memproses…</span></div>
                 <div class="flex flex-wrap gap-2">
                         <x-button variant="secondary" ::disabled="busy" @click="backTo(step - 1)" x-cloak x-show="step > 1" class="px-4! py-2! sm:min-h-11! sm:py-2! transition-none! enabled:active:opacity-100! disabled:cursor-wait! disabled:hover:bg-neutral-100">Kembali</x-button>
-                    <x-button type="submit" variant="primary" ::disabled="busy" class="px-4! py-2! sm:min-h-11! sm:py-2! transition-none! enabled:active:opacity-100! disabled:cursor-wait! disabled:hover:bg-primary/90"><span x-text="step === 5 ? 'Konfirmasi (simulasi)' : 'Selanjutnya'"></span></x-button>
+                    <x-button type="submit" variant="primary" ::disabled="busy" class="px-4! py-2! sm:min-h-11! sm:py-2! transition-none! enabled:active:opacity-100! disabled:cursor-wait! disabled:hover:bg-primary/90"><span x-text="step === 4 ? 'Konfirmasi (simulasi)' : 'Selanjutnya'"></span></x-button>
                 </div>
             </footer>
         </form>

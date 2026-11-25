@@ -19,6 +19,8 @@
             @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.company', 'label' => 'Perusahaan', 'type' => 'select', 'options' => $companyOptions, 'required' => true])
             @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.name', 'label' => 'Nama Pusat Data', 'required' => true])
             @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.status', 'label' => 'Status Pusat Data', 'type' => 'select', 'options' => $statusOptions, 'required' => true])
+            @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.land_area', 'label' => 'Luas Lahan', 'type' => 'number', 'unit' => 'ha', 'placeholder' => 'Contoh: 2.5'])
+            @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.building_area', 'label' => 'Luas Bangunan', 'type' => 'number', 'unit' => 'm²', 'placeholder' => 'Contoh: 12000'])
             @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.construction_year', 'label' => 'Tahun Mulai Konstruksi', 'type' => 'year', 'placeholder' => 'YYYY'])
             @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.operation_year', 'label' => 'Tahun Mulai Operasi', 'type' => 'year', 'placeholder' => 'YYYY'])
             @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.province', 'label' => 'Provinsi', 'type' => 'select', 'options' => $provinceOptions, 'required' => true])
@@ -63,10 +65,8 @@
     <section class="space-y-4 border-t border-neutral-300 pt-5">
         <h4 class="text-sm font-semibold">Kapasitas &amp; Utilisasi</h4>
         <div class="grid gap-4 sm:grid-cols-2">
-            @foreach ($capacityFields as $key => [$label, $type, $unit, $placeholder])
-                @if ($key !== 'reporting_year')
-                    @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.'.$key, 'label' => $label, 'type' => $type, 'unit' => $unit, 'placeholder' => $placeholder])
-                @endif
+            @foreach ($utilizationFields as $key => [$label, $type, $unit, $placeholder])
+                @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.'.$key, 'label' => $label, 'type' => $type, 'unit' => $unit, 'placeholder' => $placeholder])
             @endforeach
         </div>
     </section>
@@ -74,12 +74,23 @@
     <section class="space-y-4 border-t border-neutral-300 pt-5">
         <h4 class="text-sm font-semibold">Energi dan Air</h4>
         <div class="grid gap-4 sm:grid-cols-2">
-            @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.reporting_year', 'label' => 'Tahun Pelaporan (Reporting Year)', 'type' => 'year', 'placeholder' => 'YYYY'])
             @foreach ($energyFields as $key => [$label, $type, $unit, $placeholder])
-                @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.'.$key, 'label' => $label, 'type' => $type, 'unit' => $unit, 'placeholder' => $placeholder])
+                @include('livewire.pages.data-centers.daftar-data-center.edit-field', ['name' => 'form.'.$key, 'label' => $label, 'type' => $type, 'unit' => $unit, 'placeholder' => $placeholder, 'live' => in_array($key, ['it_energy', 'total_energy', 'water'], true)])
             @endforeach
         </div>
-        <p class="text-xs text-neutral-700">PUE dan WUE dihitung otomatis pada detail berdasarkan nilai energi dan air di atas.</p>
+        <div class="grid gap-4 rounded-lg bg-neutral-100 p-3 sm:grid-cols-2">
+            <div>
+                <p class="text-xs text-neutral-700">Power Usage Effectiveness (PUE)</p>
+                <p class="mt-1 text-sm font-medium tabular-nums">{{ $puePreview !== '' ? $puePreview : '—' }}</p>
+            </div>
+            <div>
+                <p class="text-xs text-neutral-700">Water Usage Effectiveness (WUE)</p>
+                <p class="mt-1 text-sm font-medium tabular-nums">
+                    {{ $wuePreview !== '' ? $wuePreview . ' m³/kWh' : '—' }}</p>
+            </div>
+        </div>
+        <p class="text-xs text-neutral-700">PUE = total energi listrik / energi listrik IT. WUE = konsumsi air (m³) /
+            energi listrik IT.</p>
     </section>
 
     <section class="space-y-4 border-t border-neutral-300 pt-5">

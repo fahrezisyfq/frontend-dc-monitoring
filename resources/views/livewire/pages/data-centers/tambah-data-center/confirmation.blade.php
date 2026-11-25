@@ -6,7 +6,7 @@
     <dl class="grid gap-4 md:grid-cols-2">
         @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => 'Perusahaan', 'expression' => "companies[form.company]?.name"]])
         @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => 'NIB', 'expression' => "companies[form.company]?.nib"]])
-        @foreach ($mainFields as $key => [$label, $type, $unit])
+        @foreach ($identityFields as $key => [$label, $type, $unit])
             @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => $label, 'expression' => 'form.'.$key, 'unit' => $unit]])
         @endforeach
         @foreach (['status' => 'Status Pusat Data', 'province' => 'Provinsi', 'city' => 'Kota/Kabupaten', 'district' => 'Kecamatan', 'ai_ready' => 'AI Ready', 'area' => 'Kawasan'] as $key => $label)
@@ -26,26 +26,14 @@
         @foreach ($capacityFields as $key => [$label, $type, $unit])
             @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => $label, 'expression' => 'form.'.$key, 'unit' => $unit]])
         @endforeach
-    </dl>
-</section>
-<section class="space-y-4 rounded-xl border border-neutral-300 p-4" aria-labelledby="dc-summary-energy">
-    <div class="flex items-center justify-between gap-3">
-        <h3 id="dc-summary-energy" class="text-base font-semibold">Energi dan Air</h3>
-        <x-button variant="secondary" ::disabled="busy" @click="backTo(3)" aria-label="Ubah energi dan air" class="px-4! py-2! sm:min-h-11! sm:py-2! transition-none! enabled:active:opacity-100! disabled:cursor-wait! disabled:hover:bg-neutral-100">Ubah</x-button>
-    </div>
-    <dl class="grid gap-4 md:grid-cols-2">
-        @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => 'Periode pelaporan tahunan', 'expression' => 'form.reporting_year']])
-        @foreach ($energyFields as $key => [$label, $type, $unit])
-            @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => $label, 'expression' => 'form.'.$key, 'unit' => $unit]])
-        @endforeach
         @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => 'Power Usage Effectiveness (PUE)', 'expression' => 'pue']])
-        @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => 'Water Usage Effectiveness (WUE)', 'expression' => 'wue', 'unit' => 'L/kWh']])
+        @include('livewire.pages.data-centers.tambah-data-center.summary-value', ['summary' => ['label' => 'Water Usage Effectiveness (WUE)', 'expression' => 'wue', 'unit' => 'm³/kWh']])
     </dl>
 </section>
 <section class="space-y-4 rounded-xl border border-neutral-300 p-4" aria-labelledby="dc-summary-certificates">
     <div class="flex items-center justify-between gap-3">
         <h3 id="dc-summary-certificates" class="text-base font-semibold">Sertifikasi</h3>
-        <x-button variant="secondary" ::disabled="busy" @click="backTo(4)" aria-label="Ubah sertifikasi" class="px-4! py-2! sm:min-h-11! sm:py-2! transition-none! enabled:active:opacity-100! disabled:cursor-wait! disabled:hover:bg-neutral-100">Ubah</x-button>
+        <x-button variant="secondary" ::disabled="busy" @click="backTo(3)" aria-label="Ubah sertifikasi" class="px-4! py-2! sm:min-h-11! sm:py-2! transition-none! enabled:active:opacity-100! disabled:cursor-wait! disabled:hover:bg-neutral-100">Ubah</x-button>
     </div>
     <template x-for="(certificate, position) in filledCertificates" :key="position">
         <div class="space-y-3 border-t border-neutral-300 pt-4">

@@ -22,48 +22,76 @@
             @endforeach
         </div>
 
-        <section class="space-y-3" aria-label="Identitas pusat data">
+        <section class="space-y-4" aria-label="Identitas pusat data">
             <h4 class="text-sm font-semibold">Identitas Pusat Data</h4>
-            <dl class="grid gap-4 sm:grid-cols-2">
-                @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                    'label' => 'Perusahaan',
-                    'expression' => '$wire.dataCenters[selectedId]?.company_name',
-                ])
-                @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                    'label' => 'NIB',
-                    'expression' => '$wire.dataCenters[selectedId]?.company_nib',
-                ])
-                @foreach ($mainFields as $key => [$label])
+            <div class="space-y-3">
+                <h5 class="text-xs font-semibold text-neutral-700">Informasi Utama</h5>
+                <dl class="grid gap-4 sm:grid-cols-2">
                     @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                        'label' => $label,
-                        'expression' => '$wire.dataCenters[selectedId]?.form?.' . $key,
+                        'label' => 'Perusahaan',
+                        'expression' => '$wire.dataCenters[selectedId]?.company_name',
                     ])
-                @endforeach
-                @foreach (['status' => 'Status Pusat Data', 'province' => 'Provinsi', 'city' => 'Kota/Kabupaten', 'district' => 'Kecamatan', 'pum' => 'Kode PUM (simulasi)', 'timezone' => 'Zona Waktu', 'ai_ready' => 'AI Ready', 'area' => 'Kawasan'] as $key => $label)
-                    @php($expression = in_array($key, ['pum', 'timezone'], true) ? '$wire.dataCenters[selectedId]?.' . $key : '$wire.dataCenters[selectedId]?.form?.' . $key)
                     @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                        'label' => $label,
-                        'expression' => $expression,
+                        'label' => 'NIB',
+                        'expression' => '$wire.dataCenters[selectedId]?.company_nib',
                     ])
-                @endforeach
-                @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                    'label' => 'Service Models',
-                    'expression' => '($wire.dataCenters[selectedId]?.form?.services ?? []).join(\', \')',
-                ])
-            </dl>
+                    @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
+                        'label' => 'Nama Pusat Data',
+                        'expression' => '$wire.dataCenters[selectedId]?.form?.name',
+                    ])
+                    @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
+                        'label' => 'Status Pusat Data',
+                        'expression' => '$wire.dataCenters[selectedId]?.form?.status',
+                    ])
+                    @foreach ($identityFields as $key => [$label, , $fieldUnit])
+                        @if ($key !== 'name')
+                            @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
+                                'label' => $label,
+                                'expression' => '$wire.dataCenters[selectedId]?.form?.' . $key,
+                                'unit' => $fieldUnit,
+                            ])
+                        @endif
+                    @endforeach
+                </dl>
+            </div>
+            <div class="space-y-3">
+                <h5 class="text-xs font-semibold text-neutral-700">Klasifikasi dan Layanan</h5>
+                <dl class="grid gap-4 sm:grid-cols-2">
+                    @foreach (['area' => 'Kawasan', 'ai_ready' => 'AI Ready'] as $key => $label)
+                        @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
+                            'label' => $label,
+                            'expression' => '$wire.dataCenters[selectedId]?.form?.' . $key,
+                        ])
+                    @endforeach
+                    @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
+                        'label' => 'Service Models',
+                        'expression' => '($wire.dataCenters[selectedId]?.form?.services ?? []).join(\', \')',
+                    ])
+                </dl>
+            </div>
+            <div class="space-y-3">
+                <h5 class="text-xs font-semibold text-neutral-700">Alamat Pusat Data</h5>
+                <dl class="grid gap-4 sm:grid-cols-2">
+                    @foreach (['province' => 'Provinsi', 'city' => 'Kota/Kabupaten', 'district' => 'Kecamatan', 'pum' => 'Kode PUM (simulasi)', 'timezone' => 'Zona Waktu'] as $key => $label)
+                        @php($expression = in_array($key, ['pum', 'timezone'], true) ? '$wire.dataCenters[selectedId]?.' . $key : '$wire.dataCenters[selectedId]?.form?.' . $key)
+                        @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
+                            'label' => $label,
+                            'expression' => $expression,
+                        ])
+                    @endforeach
+                </dl>
+            </div>
         </section>
 
         <section class="space-y-3 border-t border-neutral-300 pt-4" aria-label="Kapasitas dan utilisasi pusat data">
             <h4 class="text-sm font-semibold">Kapasitas &amp; Utilisasi</h4>
             <dl class="grid gap-4 sm:grid-cols-2">
-                @foreach ($capacityFields as $key => [$label, $type, $unit])
-                    @if ($key !== 'reporting_year')
-                        @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                            'label' => $label,
-                            'expression' => '$wire.dataCenters[selectedId]?.form?.' . $key,
-                            'unit' => $unit,
-                        ])
-                    @endif
+                @foreach ($utilizationFields as $key => [$label, , $fieldUnit])
+                    @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
+                        'label' => $label,
+                        'expression' => '$wire.dataCenters[selectedId]?.form?.' . $key,
+                        'unit' => $fieldUnit,
+                    ])
                 @endforeach
             </dl>
         </section>
@@ -71,31 +99,34 @@
         <section class="space-y-3 border-t border-neutral-300 pt-4" aria-label="Energi dan air pusat data">
             <h4 class="text-sm font-semibold">Energi dan Air</h4>
             <dl class="grid gap-4 sm:grid-cols-2">
-                @foreach (['reporting_year' => 'Tahun Pelaporan (Reporting Year)'] as $key => $label)
+                @foreach ($energyFields as $key => [$label, , $fieldUnit])
                     @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
                         'label' => $label,
                         'expression' => '$wire.dataCenters[selectedId]?.form?.' . $key,
+                        'unit' => $fieldUnit,
                     ])
                 @endforeach
-                @foreach ($energyFields as $key => [$label, $type, $unit])
-                    @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                        'label' => $label,
-                        'expression' => '$wire.dataCenters[selectedId]?.form?.' . $key,
-                        'unit' => $unit,
-                    ])
-                @endforeach
-                @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                    'label' => 'Power Usage Effectiveness (PUE)',
-                    'expression' => '$wire.dataCenters[selectedId]?.pue',
-                ])
-                @include('livewire.pages.data-centers.daftar-data-center.detail-value', [
-                    'label' => 'Water Usage Effectiveness (WUE)',
-                    'expression' => '$wire.dataCenters[selectedId]?.wue',
-                    'unit' => 'L/kWh',
-                ])
             </dl>
-            <p class="text-xs text-neutral-700">PUE = total energi listrik / energi listrik IT. WUE = konsumsi air /
-                energi listrik IT.</p>
+        </section>
+
+        <section class="space-y-3 border-t border-neutral-300 pt-4" aria-label="Power Usage Effectiveness (PUE)">
+            <h4 class="text-sm font-semibold">Power Usage Effectiveness (PUE)</h4>
+            <div class="rounded-lg bg-neutral-100/60 p-4">
+                <p class="text-xs text-neutral-700">Nilai PUE</p>
+                <p class="mt-1 text-2xl font-semibold text-primary tabular-nums"
+                    x-text="dcDetail($wire.dataCenters[selectedId]?.pue)"></p>
+                <p class="mt-2 text-xs text-neutral-700">PUE = total energi listrik / energi listrik IT.</p>
+            </div>
+        </section>
+
+        <section class="space-y-3 border-t border-neutral-300 pt-4" aria-label="Water Usage Effectiveness (WUE)">
+            <h4 class="text-sm font-semibold">Water Usage Effectiveness (WUE)</h4>
+            <div class="rounded-lg bg-neutral-100/60 p-4">
+                <p class="text-xs text-neutral-700">Nilai WUE</p>
+                <p class="mt-1 text-2xl font-semibold text-primary tabular-nums"
+                    x-text="dcDetail($wire.dataCenters[selectedId]?.wue, 'm³/kWh')"></p>
+                <p class="mt-2 text-xs text-neutral-700">WUE = konsumsi air (m³) / energi listrik IT.</p>
+            </div>
         </section>
 
         <section class="space-y-3 border-t border-neutral-300 pt-4 pb-4" aria-label="Sertifikasi pusat data">

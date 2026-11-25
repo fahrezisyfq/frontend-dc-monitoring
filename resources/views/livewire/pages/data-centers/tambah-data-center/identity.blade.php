@@ -62,8 +62,8 @@
             ],
         ])
 
-        {{-- Tahun Konstruksi dan Operasional --}}
-        @foreach ($mainFields as $key => [$label, $type, $unit, $placeholder])
+        {{-- Tahun Konstruksi, Operasional, dan Luas --}}
+        @foreach ($identityFields as $key => [$label, $type, $unit, $placeholder])
             @if ($key !== 'name')
                 @include('livewire.pages.data-centers.tambah-data-center.field', [
                     'field' => [
